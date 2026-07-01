@@ -632,7 +632,7 @@ function refresh_sceneitem(find_newest)
             sceneitem_info.bounds.x = source_width * sceneitem_info.scale.x
             sceneitem_info.bounds.y = source_height * sceneitem_info.scale.y
 
-            obs.obs_sceneitem_set_info(sceneitem, sceneitem_info)
+            obs.obs_sceneitem_set_info2(sceneitem, sceneitem_info)
 
             log("警告：发现现有的非边界框变换，可能导致缩放问题。\n" ..
                 "         设置已自动转换为边界框缩放变换。\n" ..
