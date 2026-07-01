@@ -1,6 +1,7 @@
 --
 -- OBS Zoom to Mouse
--- An OBS lua script to zoom a display-capture source to focus on the mouse.
+-- 一个 OBS Lua 脚本，用于将显示器采集源放大到鼠标位置。
+-- 基于 https://github.com/BlankSourceCode/obs-zoom-to-mouse 汉化，由 DeepSeek V4 Flash 翻译。
 -- Copyright (c) BlankSourceCode.  All rights reserved.
 --
 
@@ -87,7 +88,7 @@ local m1, m2 = version:match("(%d+%.%d+)%.(%d+)")
 local major = tonumber(m1) or 0
 local minor = tonumber(m2) or 0
 
--- Define the mouse cursor functions for each platform
+-- 为各平台定义鼠标光标函数
 if ffi.os == "Windows" then
     ffi.cdef([[
         typedef int BOOL;
@@ -155,8 +156,8 @@ elseif ffi.os == "OSX" then
 end
 
 ---
--- Get the current mouse position
----@return table Mouse position
+-- 获取当前鼠标位置
+---@return table 鼠标位置
 function get_mouse_pos()
     local mouse = { x = 0, y = 0 }
 
@@ -195,7 +196,7 @@ function get_mouse_pos()
 end
 
 ---
--- Get the information about display capture sources for the current platform
+-- 获取当前平台的显示器采集源信息
 ---@return any
 function get_dc_info()
     if ffi.os == "Windows" then
@@ -230,8 +231,8 @@ function get_dc_info()
 end
 
 ---
--- Logs a message to the OBS script console
----@param msg string The message to log
+-- 记录一条消息到 OBS 脚本控制台
+---@param msg string 要记录的消息
 function log(msg)
     if debug_logs then
         obs.script_log(obs.OBS_LOG_INFO, msg)
@@ -239,10 +240,10 @@ function log(msg)
 end
 
 ---
--- Format the given lua table into a string
+-- 将 Lua 表格格式化为字符串
 ---@param tbl any
 ---@param indent any
----@return string result The formatted string
+---@return string 格式化后的字符串
 function format_table(tbl, indent)
     if not indent then
         indent = 0
@@ -263,18 +264,18 @@ function format_table(tbl, indent)
 end
 
 ---
--- Linear interpolate between v0 and v1
----@param v0 number The start position
----@param v1 number The end position
----@param t number Time
----@return number value The interpolated value
+-- 线性插值
+---@param v0 number 起始位置
+---@param v1 number 结束位置
+---@param t number 时间
+---@return number 插值结果
 function lerp(v0, v1, t)
     return v0 * (1 - t) + v1 * t;
 end
 
 ---
--- Ease a time value in and out
----@param t number Time between 0 and 1
+-- 缓入缓出
+---@param t number 时间（0 到 1 之间）
 ---@return number
 function ease_in_out(t)
     t = t * 2
@@ -287,23 +288,23 @@ function ease_in_out(t)
 end
 
 ---
--- Clamps a given value between min and max
----@param min number The min value
----@param max number The max value
----@param value number The number to clamp
----@return number result the clamped number
+-- 将给定值限制在最小值和最大值之间
+---@param min number 最小值
+---@param max number 最大值
+---@param value number 要限制的值
+---@return number 限制后的值
 function clamp(min, max, value)
     return math.max(min, math.min(max, value))
 end
 
 ---
--- Get the size and position of the monitor so that we know the top-left mouse point
----@param source any The OBS source
----@return table|nil monitor_info The monitor size/top-left point
+-- 获取显示器的尺寸和位置，以便确定鼠标左上角坐标
+---@param source any OBS 源
+---@return table|nil 显示器的尺寸/左上角坐标
 function get_monitor_info(source)
     local info = nil
 
-    -- Only do the expensive look up if we are using automatic calculations on a display source
+    -- 仅在使用显示器源的自动计算时才执行开销较大的查找
     if is_display_capture(source) and not use_monitor_override then
         local dc_info = get_dc_info()
         if dc_info ~= nil then
@@ -339,12 +340,12 @@ function get_monitor_info(source)
                         obs.obs_data_release(settings)
                     end
 
-                    -- This works for my machine as the monitor names are given as "U2790B: 3840x2160 @ -1920,0 (Primary Monitor)"
-                    -- I don't know if this holds true for other machines and/or OBS versions
-                    -- TODO: Update this with some custom FFI calls to find the monitor top-left x and y coordinates if it doesn't work for anyone else
-                    -- TODO: Refactor this into something that would work with Windows/Linux/Mac assuming we can't do it like this
+                    -- 这在我的机器上有效，显示器名称格式为 "U2790B: 3840x2160 @ -1920,0（主显示器）"
+                    -- 不确定在其他机器和/或 OBS 版本上是否同样适用
+                    -- TODO: 如果对其他人无效，请使用自定义 FFI 调用来查找显示器的左上角 x/y 坐标
+                    -- TODO: 将其重构为适用于 Windows/Linux/Mac 的方法（假设不能这样处理）
                     if found then
-                        log("Parsing display name: " .. found)
+                        log("正在解析显示名称：" .. found)
                         local x, y = found:match("(-?%d+),(-?%d+)")
                         local width, height = found:match("(%d+)x(%d+)")
 
@@ -358,7 +359,7 @@ function get_monitor_info(source)
                         info.display_width = info.width
                         info.display_height = info.height
 
-                        log("Parsed the following display information\n" .. format_table(info))
+                        log("解析到以下显示信息\n" .. format_table(info))
 
                         if info.width == 0 and info.height == 0 then
                             info = nil
@@ -385,23 +386,23 @@ function get_monitor_info(source)
     end
 
     if not info then
-        log("WARNING: Could not auto calculate zoom source position and size.\n" ..
-            "         Try using the 'Set manual source position' option and adding override values")
+        log("警告：无法自动计算缩放源位置和尺寸。\n" ..
+            "         请尝试使用"手动设置源位置"选项并添加覆盖值")
     end
 
     return info
 end
 
 ---
--- Check to see if the specified source is a display capture source
--- If the source_to_check is nil then the answer will be false
----@param source_to_check any The source to check
----@return boolean result True if source is a display capture, false if it nil or some other source type
+-- 检查指定源是否为显示器采集源
+-- 如果 source_to_check 为 nil，则返回 false
+---@param source_to_check any 要检查的源
+---@return boolean 如果是显示器采集源返回 true，否则返回 false
 function is_display_capture(source_to_check)
     if source_to_check ~= nil then
         local dc_info = get_dc_info()
         if dc_info ~= nil then
-            -- Do a quick check to ensure this is a display capture
+            -- 快速检查确认这是显示器采集源
             if allow_all_sources then
                 local source_type = obs.obs_source_get_id(source_to_check)
                 if source_type == dc_info.source_id then
@@ -417,7 +418,7 @@ function is_display_capture(source_to_check)
 end
 
 ---
--- Releases the current sceneitem and resets data back to default
+-- 释放当前的场景项并将数据重置为默认值
 function release_sceneitem()
     if is_timer_running then
         obs.timer_remove(on_timer)
@@ -428,14 +429,14 @@ function release_sceneitem()
 
     if sceneitem ~= nil then
         if crop_filter ~= nil and source ~= nil then
-            log("Zoom crop filter removed")
+            log("缩放裁剪滤镜已移除")
             obs.obs_source_filter_remove(source, crop_filter)
             obs.obs_source_release(crop_filter)
             crop_filter = nil
         end
 
         if crop_filter_temp ~= nil and source ~= nil then
-            log("Conversion crop filter removed")
+            log("转换裁剪滤镜已移除")
             obs.obs_source_filter_remove(source, crop_filter_temp)
             obs.obs_source_release(crop_filter_temp)
             crop_filter_temp = nil
@@ -447,13 +448,13 @@ function release_sceneitem()
         end
 
         if sceneitem_info_orig ~= nil then
-            log("Transform info reset back to original")
+            log("变换信息已重置为原始值")
             obs.obs_sceneitem_get_info(sceneitem, sceneitem_info_orig)
             sceneitem_info_orig = nil
         end
 
         if sceneitem_crop_orig ~= nil then
-            log("Transform crop reset back to original")
+            log("变换裁剪已重置为原始值")
             obs.obs_sceneitem_set_crop(sceneitem, sceneitem_crop_orig)
             sceneitem_crop_orig = nil
         end
@@ -469,34 +470,34 @@ function release_sceneitem()
 end
 
 ---
--- Updates the current sceneitem with a refreshed set of data from the source
--- Optionally will release the existing sceneitem and get a new one from the current scene
----@param find_newest boolean True to release the current sceneitem and get a new one
+-- 用刷新后的源数据更新当前场景项
+-- 可选择释放现有场景项并从当前场景获取新的场景项
+---@param find_newest boolean true 表示释放当前场景项并获取新的
 function refresh_sceneitem(find_newest)
-    -- TODO: Figure out why we need to get the size from the named source during update instead of via the sceneitem source
+    -- TODO: 弄清楚为什么在更新时需要通过命名源获取尺寸，而不是通过 sceneitem source
     local source_raw = { width = 0, height = 0 }
 
     if find_newest then
-        -- Release the current sceneitem now that we are replacing it
+        -- 释放当前的场景项，因为我们即将替换它
         release_sceneitem()
 
-        -- Quit early if we are using no zoom source
-        -- This allows users to reset the crop data back to the original,
-        -- update it, and then force the conversion to happen by re-selecting it.
+        -- 如果未选择缩放源则提前退出
+        -- 这允许用户将裁剪数据重置为原始值，
+        -- 更新设置，然后通过重新选择源强制进行转换
         if source_name == "obs-zoom-to-mouse-none" then
             return
         end
 
-        -- Get a matching source we can use for zooming in the current scene
-        log("Finding sceneitem for Zoom Source '" .. source_name .. "'")
+        -- 在当前场景中获取可用的缩放源
+        log("正在查找缩放源 '" .. source_name .. "' 的场景项")
         if source_name ~= nil then
             source = obs.obs_get_source_by_name(source_name)
             if source ~= nil then
-                -- Get the source size, for some reason this works during load but the sceneitem source doesn't
+                -- 获取源尺寸，加载时有效但 sceneitem source 无效
                 source_raw.width = obs.obs_source_get_width(source)
                 source_raw.height = obs.obs_source_get_height(source)
 
-                -- Get the current scene
+                -- 获取当前场景
                 local scene_source = obs.obs_frontend_get_current_scene()
                 if scene_source ~= nil then
                     local function find_scene_item_by_name(root_scene)
@@ -505,17 +506,17 @@ function refresh_sceneitem(find_newest)
 
                         while #queue > 0 do
                             local s = table.remove(queue, 1)
-                            log("Looking in scene '" .. obs.obs_source_get_name(obs.obs_scene_get_source(s)) .. "'")
+                            log("正在检查场景 '" .. obs.obs_source_get_name(obs.obs_scene_get_source(s)) .. "'")
 
-                            -- Check if the current scene has the target scene item
+                            -- 检查当前场景是否有目标场景项
                             local found = obs.obs_scene_find_source(s, source_name)
                             if found ~= nil then
-                                log("Found sceneitem '" .. source_name .. "'")
+                                log("找到场景项 '" .. source_name .. "'")
                                 obs.obs_sceneitem_addref(found)
                                 return found
                             end
 
-                            -- If the current scene has nested scenes, enqueue them for later examination
+                            -- 如果当前场景包含嵌套场景，将其加入队列供后续检查
                             local all_items = obs.obs_scene_enum_items(s)
                             if all_items then
                                 for _, item in pairs(all_items) do
@@ -537,8 +538,8 @@ function refresh_sceneitem(find_newest)
                         return nil
                     end
 
-                    -- Find the sceneitem for the source_name by looking through all the items
-                    -- We start at the current scene and use a BFS to look into any nested scenes
+                    -- 遍历所有项目查找 source_name 对应的场景项
+                    -- 从当前场景开始，使用 BFS 搜索任何嵌套场景
                     local current = obs.obs_scene_from_source(scene_source)
                     sceneitem = find_scene_item_by_name(current)
 
@@ -546,8 +547,8 @@ function refresh_sceneitem(find_newest)
                 end
 
                 if not sceneitem then
-                    log("WARNING: Source not part of the current scene hierarchy.\n" ..
-                        "         Try selecting a different zoom source or switching scenes.")
+                    log("警告：源不属于当前场景层级。\n" ..
+                        "         请尝试选择其他缩放源或切换场景。")
                     obs.obs_sceneitem_release(sceneitem)
                     obs.obs_source_release(source)
 
@@ -566,13 +567,13 @@ function refresh_sceneitem(find_newest)
     local is_non_display_capture = not is_display_capture(source)
     if is_non_display_capture then
         if not use_monitor_override then
-            log("ERROR: Selected Zoom Source is not a display capture source.\n" ..
-                "       You MUST enable 'Set manual source position' and set the correct override values for size and position.")
+            log("错误：选中的缩放源不是显示器采集源。\n" ..
+                "       你必须启用"手动设置源位置"并为尺寸和位置设置正确的覆盖值。")
         end
     end
 
     if sceneitem ~= nil then
-        -- Capture the original settings so we can restore them later
+        -- 保存原始设置以便之后恢复
         sceneitem_info_orig = obs.obs_transform_info()
         obs.obs_sceneitem_get_info(sceneitem, sceneitem_info_orig)
 
@@ -586,19 +587,19 @@ function refresh_sceneitem(find_newest)
         obs.obs_sceneitem_get_crop(sceneitem, sceneitem_crop)
 
         if is_non_display_capture then
-            -- Non-Display Capture sources don't correctly report crop values
+            -- 非显示器采集源无法正确报告裁剪值
             sceneitem_crop_orig.left = 0
             sceneitem_crop_orig.top = 0
             sceneitem_crop_orig.right = 0
             sceneitem_crop_orig.bottom = 0
         end
 
-        -- Get the current source size (this will be the value after any applied crop filters)
+        -- 获取当前源尺寸（经过任何裁剪滤镜后的值）
         if not source then
-            log("ERROR: Could not get source for sceneitem (" .. source_name .. ")")
+            log("错误：无法获取场景项对应的源 (" .. source_name .. ")")
         end
 
-        -- TODO: Figure out why we need this fallback code
+        -- TODO: 弄清楚为什么需要这个后备代码
         local source_width = obs.obs_source_get_base_width(source)
         local source_height = obs.obs_source_get_base_height(source)
 
@@ -611,20 +612,20 @@ function refresh_sceneitem(find_newest)
 
         if source_width == 0 or source_height == 0 then
             if monitor_info ~= nil and monitor_info.width > 0 and monitor_info.height > 0 then
-                log("WARNING: Something went wrong determining source size.\n" ..
-                    "         Using source size from info: " .. monitor_info.width .. ", " .. monitor_info.height)
+                log("警告：无法确定源尺寸。\n" ..
+                    "         使用来自信息的源尺寸：" .. monitor_info.width .. ", " .. monitor_info.height)
                 source_width = monitor_info.width
                 source_height = monitor_info.height
             else
-                log("ERROR: Something went wrong determining source size.\n" ..
-                "       Try using the 'Set manual source position' option and adding override values")
+                log("错误：无法确定源尺寸。\n" ..
+                "       请尝试使用"手动设置源位置"选项并添加覆盖值")
             end
         else
-            log("Using source size: " .. source_width .. ", " .. source_height)
+            log("使用源尺寸：" .. source_width .. ", " .. source_height)
         end
 
-        -- Convert the current transform into one we can correctly modify for zooming
-        -- Ideally the user just has a valid one set and we don't have to change anything because this might not work 100% of the time
+        -- 将当前变换转换为可正确修改的缩放变换
+        -- 理想情况下用户已设置有效的变换，我们无需修改，因为这并非 100% 有效
         if sceneitem_info.bounds_type == obs.OBS_BOUNDS_NONE then
             sceneitem_info.bounds_type = obs.OBS_BOUNDS_SCALE_INNER
             sceneitem_info.bounds_alignment = 5 -- (5 == OBS_ALIGN_TOP | OBS_ALIGN_LEFT) (0 == OBS_ALIGN_CENTER)
@@ -633,12 +634,12 @@ function refresh_sceneitem(find_newest)
 
             obs.obs_sceneitem_set_info(sceneitem, sceneitem_info)
 
-            log("WARNING: Found existing non-boundingbox transform. This may cause issues with zooming.\n" ..
-                "         Settings have been auto converted to a bounding box scaling transfrom instead.\n" ..
-                "         If you have issues with your layout consider making the transform use a bounding box manually.")
+            log("警告：发现现有的非边界框变换，可能导致缩放问题。\n" ..
+                "         设置已自动转换为边界框缩放变换。\n" ..
+                "         如果布局出现问题，请考虑手动将变换设置为使用边界框。")
         end
 
-        -- Get information about any existing crop filters (that aren't ours)
+        -- 获取现有裁剪滤镜的信息（非我们创建的）
         zoom_info.source_crop_filter = { x = 0, y = 0, w = 0, h = 0 }
         local found_crop_filter = false
         local filters = obs.obs_source_enum_filters(source)
@@ -660,12 +661,12 @@ function refresh_sceneitem(find_newest)
                                     zoom_info.source_crop_filter.w + obs.obs_data_get_int(settings, "cx")
                                 zoom_info.source_crop_filter.h =
                                     zoom_info.source_crop_filter.h + obs.obs_data_get_int(settings, "cy")
-                                log("Found existing non-relative crop/pad filter (" ..
+                                log("找到现有的非相对裁剪/填充滤镜 (" ..
                                     name ..
-                                    "). Applying settings " .. format_table(zoom_info.source_crop_filter))
+                                    ")。应用设置 " .. format_table(zoom_info.source_crop_filter))
                             else
-                                log("WARNING: Found existing relative crop/pad filter (" .. name .. ").\n" ..
-                                    "         This will cause issues with zooming. Convert to relative settings instead.")
+                                log("警告：发现现有的相对裁剪/填充滤镜 (" .. name .. ")。\n" ..
+                                    "         这将导致缩放问题。请转换为非相对设置。")
                             end
                             obs.obs_data_release(settings)
                         end
@@ -676,22 +677,22 @@ function refresh_sceneitem(find_newest)
             obs.source_list_release(filters)
         end
 
-        -- If the user has a transform crop set, we need to convert it into a crop filter so that it works correctly with zooming
-        -- Ideally the user does this manually and uses a crop filter instead of the transfrom crop because this might not work 100% of the time
+        -- 如果用户设置了变换裁剪，需要将其转换为裁剪滤镜以正确缩放
+        -- 理想情况下用户应手动操作，使用裁剪滤镜而非变换裁剪，因为这并非 100% 有效
         if not found_crop_filter and (sceneitem_crop_orig.left ~= 0 or sceneitem_crop_orig.top ~= 0 or sceneitem_crop_orig.right ~= 0 or sceneitem_crop_orig.bottom ~= 0) then
-            log("Creating new crop filter")
+            log("正在创建新的裁剪滤镜")
 
-            -- Update the source size
+            -- 更新源尺寸
             source_width = source_width - (sceneitem_crop_orig.left + sceneitem_crop_orig.right)
             source_height = source_height - (sceneitem_crop_orig.top + sceneitem_crop_orig.bottom)
 
-            -- Update the source crop filter now that we will be using one
+            -- 更新源裁剪滤镜信息
             zoom_info.source_crop_filter.x = sceneitem_crop_orig.left
             zoom_info.source_crop_filter.y = sceneitem_crop_orig.top
             zoom_info.source_crop_filter.w = source_width
             zoom_info.source_crop_filter.h = source_height
 
-            -- Add a new crop filter that emulates the existing transform crop
+            -- 添加模拟现有变换裁剪的新裁剪滤镜
             local settings = obs.obs_data_create()
             obs.obs_data_set_bool(settings, "relative", false)
             obs.obs_data_set_int(settings, "left", zoom_info.source_crop_filter.x)
@@ -702,22 +703,22 @@ function refresh_sceneitem(find_newest)
             obs.obs_source_filter_add(source, crop_filter_temp)
             obs.obs_data_release(settings)
 
-            -- Clear out the transform crop
+            -- 清除变换裁剪
             sceneitem_crop.left = 0
             sceneitem_crop.top = 0
             sceneitem_crop.right = 0
             sceneitem_crop.bottom = 0
             obs.obs_sceneitem_set_crop(sceneitem, sceneitem_crop)
 
-            log("WARNING: Found existing transform crop. This may cause issues with zooming.\n" ..
-                "         Settings have been auto converted to a relative crop/pad filter instead.\n" ..
-                "         If you have issues with your layout consider making the filter manually.")
+            log("警告：发现现有的变换裁剪，可能导致缩放问题。\n" ..
+                "         设置已自动转换为非相对裁剪/填充滤镜。\n" ..
+                "         如果布局出现问题，请考虑手动添加滤镜。")
         elseif found_crop_filter then
             source_width = zoom_info.source_crop_filter.w
             source_height = zoom_info.source_crop_filter.h
         end
 
-        -- Get the rest of the information needed to correctly zoom
+        -- 获取正确缩放所需的其余信息
         zoom_info.source_size = { width = source_width, height = source_height }
         zoom_info.source_crop = {
             l = sceneitem_crop_orig.left,
@@ -725,9 +726,9 @@ function refresh_sceneitem(find_newest)
             r = sceneitem_crop_orig.right,
             b = sceneitem_crop_orig.bottom
         }
-        --log("Transform updated. Using following values -\n" .. format_table(zoom_info))
+        --log("变换已更新。使用以下值 -\n" .. format_table(zoom_info))
 
-        -- Set the initial the crop filter data to match the source
+        -- 设置与源匹配的初始裁剪滤镜数据
         crop_filter_info_orig = { x = 0, y = 0, w = zoom_info.source_size.width, h = zoom_info.source_size.height }
         crop_filter_info = {
             x = crop_filter_info_orig.x,
@@ -736,7 +737,7 @@ function refresh_sceneitem(find_newest)
             h = crop_filter_info_orig.h
         }
 
-        -- Get or create our crop filter that we change during zoom
+        -- 获取或创建用于缩放的裁剪滤镜
         crop_filter = obs.obs_source_get_filter_by_name(source, CROP_FILTER_NAME)
         if crop_filter == nil then
             crop_filter_settings = obs.obs_data_create()
@@ -753,48 +754,48 @@ function refresh_sceneitem(find_newest)
 end
 
 ---
--- Get the target position that we will attempt to zoom towards
+-- 获取缩放目标位置
 ---@param zoom any
 ---@return table
 function get_target_position(zoom)
     local mouse = get_mouse_pos()
 
-    -- If we have monitor information then we can offset the mouse by the top-left of the monitor position
-    -- This is because the display-capture source assumes top-left is 0,0 but the mouse uses the total desktop area,
-    -- so a second monitor might start at x:1920, y:0 for example, so when we click at 1920,0 we want it to look like we clicked 0,0 on the source.
+    -- 如果有显示器信息，我们可以通过显示器左上角偏移鼠标位置
+    -- 这是因为显示器采集源假设左上角为 0,0，但鼠标使用的是整个桌面区域，
+    -- 例如第二个显示器从 x:1920, y:0 开始，在 1920,0 点击时应显示为源上的 0,0
     if monitor_info then
         mouse.x = mouse.x - monitor_info.x
         mouse.y = mouse.y - monitor_info.y
     end
 
-    -- Now offset the mouse by the crop top-left because if we cropped 100px off of the display clicking at 100,0 should really be the top-left 0,0
+    -- 通过裁剪左上角偏移鼠标位置，因为如果从显示器裁剪了 100px，在 100,0 点击时应是左上角 0,0
     mouse.x = mouse.x - zoom.source_crop_filter.x
     mouse.y = mouse.y - zoom.source_crop_filter.y
 
-    -- If the source uses a different scale to the display, apply that now.
-    -- This can happen with cloned sources, where it is cloning a scene that has a full screen display.
-    -- The display will be the full desktop pixel size, but the cloned scene will be scaled down to the canvas,
-    -- so we need to scale down the mouse movement to match
+    -- 如果源使用与显示器不同的缩放比例，则应用该比例
+    -- 这可能在克隆源时发生，克隆的场景包含全屏显示器
+    -- 显示器是全桌面像素尺寸，但克隆场景被缩放到画布大小
+    -- 因此需要按比例缩放鼠标移动
     if monitor_info and monitor_info.scale_x and monitor_info.scale_y then
         mouse.x = mouse.x * monitor_info.scale_x
         mouse.y = mouse.y * monitor_info.scale_y
     end
 
-    -- Get the new size after we zoom
-    -- Remember that because we are using a crop/pad filter making the size smaller (dividing by zoom) means that we see less of the image
-    -- in the same amount of space making it look bigger (aka zoomed in)
+    -- 获取缩放后的新尺寸
+    -- 注意：使用裁剪/填充滤镜时，尺寸变小（除以缩放倍数）意味着在相同空间中看到更少的图像
+    -- 从而使其看起来更大（即放大）
     local new_size = {
         width = zoom.source_size.width / zoom.zoom_to,
         height = zoom.source_size.height / zoom.zoom_to
     }
 
-    -- New offset for the crop/pad filter is whereever we clicked minus half the size, so that the clicked point because the new center
+    -- 裁剪/填充滤镜的新偏移量 = 点击位置减去尺寸的一半，使点击点成为新中心
     local pos = {
         x = mouse.x - new_size.width * 0.5,
         y = mouse.y - new_size.height * 0.5
     }
 
-    -- Create the full crop results
+    -- 创建完整的裁剪结果
     local crop = {
         x = pos.x,
         y = pos.y,
@@ -802,7 +803,7 @@ function get_target_position(zoom)
         h = new_size.height,
     }
 
-    -- Keep the zoom in bounds of the source so that we never show something outside that user is trying to hide with existing crop settings
+    -- 确保缩放范围在源边界内，避免显示用户通过裁剪设置隐藏的内容
     crop.x = math.floor(clamp(0, (zoom.source_size.width - new_size.width), crop.x))
     crop.y = math.floor(clamp(0, (zoom.source_size.height - new_size.height), crop.y))
 
@@ -812,10 +813,10 @@ end
 function on_toggle_follow(pressed)
     if pressed then
         is_following_mouse = not is_following_mouse
-        log("Tracking mouse is " .. (is_following_mouse and "on" or "off"))
+        log("鼠标追踪已" .. (is_following_mouse and "开启" or "关闭"))
 
         if is_following_mouse and zoom_state == ZoomState.ZoomedIn then
-            -- Since we are zooming we need to start the timer for the animation and tracking
+            -- 正在缩放，需要启动定时器运行动画和追踪
             if is_timer_running == false then
                 is_timer_running = true
                 local timer_interval = math.floor(obs.obs_get_frame_interval_ns() / 1000000)
@@ -827,11 +828,11 @@ end
 
 function on_toggle_zoom(pressed)
     if pressed then
-        -- Check if we are in a safe state to zoom
+        -- 检查是否处于安全的缩放状态
         if zoom_state == ZoomState.ZoomedIn or zoom_state == ZoomState.None then
             if zoom_state == ZoomState.ZoomedIn then
-                log("Zooming out")
-                -- To zoom out, we set the target back to whatever it was originally
+                log("正在缩小")
+                -- 缩小：将目标设置回原始值
                 zoom_state = ZoomState.ZoomingOut
                 zoom_time = 0
                 locked_center = nil
@@ -839,11 +840,11 @@ function on_toggle_zoom(pressed)
                 zoom_target = { crop = crop_filter_info_orig, c = sceneitem_crop_orig }
                 if is_following_mouse then
                     is_following_mouse = false
-                    log("Tracking mouse is off (due to zoom out)")
+                    log("鼠标追踪已关闭（因缩小）")
                 end
             else
-                log("Zooming in")
-                -- To zoom in, we get a new target based on where the mouse was when zoom was clicked
+                log("正在放大")
+                -- 放大：根据点击缩放时的鼠标位置计算新目标
                 zoom_state = ZoomState.ZoomingIn
                 zoom_info.zoom_to = zoom_value
                 zoom_time = 0
@@ -852,7 +853,7 @@ function on_toggle_zoom(pressed)
                 zoom_target = get_target_position(zoom_info)
             end
 
-            -- Since we are zooming we need to start the timer for the animation and tracking
+            -- 正在缩放，需要启动定时器运行动画和追踪
             if is_timer_running == false then
                 is_timer_running = true
                 local timer_interval = math.floor(obs.obs_get_frame_interval_ns() / 1000000)
@@ -864,14 +865,14 @@ end
 
 function on_timer()
     if crop_filter_info ~= nil and zoom_target ~= nil then
-        -- Update our zoom time that we use for the animation
+        -- 更新用于动画的缩放时间
         zoom_time = zoom_time + zoom_speed
 
         if zoom_state == ZoomState.ZoomingOut or zoom_state == ZoomState.ZoomingIn then
-            -- When we are doing a zoom animation (in or out) we linear interpolate the crop to the target
+            -- 执行缩放动画时，对裁剪进行线性插值到目标值
             if zoom_time <= 1 then
-                -- If we have auto-follow turned on, make sure to keep the mouse in the view while we zoom
-                -- This is incase the user is moving the mouse a lot while the animation (which may be slow) is playing
+                -- 如果开启了自动跟随，确保在缩放过程中鼠标保持在视野内
+                -- 防止用户在动画播放时大量移动鼠标
                 if zoom_state == ZoomState.ZoomingIn and use_auto_follow_mouse then
                     zoom_target = get_target_position(zoom_info)
                 end
@@ -882,7 +883,7 @@ function on_timer()
                 set_crop_settings(crop_filter_info)
             end
         else
-            -- If we are not zooming we only move the x/y to follow the mouse (width/height stay constant)
+            -- 非缩放状态时，仅移动 x/y 来跟随鼠标（宽/高保持不变）
             if is_following_mouse then
                 zoom_target = get_target_position(zoom_info)
 
@@ -892,14 +893,14 @@ function on_timer()
                         zoom_target.raw_center.x > zoom_target.crop.x + zoom_target.crop.w or
                         zoom_target.raw_center.y < zoom_target.crop.y or
                         zoom_target.raw_center.y > zoom_target.crop.y + zoom_target.crop.h then
-                        -- Don't follow the mouse if we are outside the bounds of the source
+                        -- 超出源边界时不跟随鼠标
                         skip_frame = true
                     end
                 end
 
                 if not skip_frame then
-                    -- If we have a locked_center it means we are currently in a locked zone and
-                    -- shouldn't track the mouse until it moves out of the area
+                    -- locked_center 存在表示当前处于锁定区域
+                    -- 在鼠标移出该区域前不追踪
                     if locked_center ~= nil then
                         local diff = {
                             x = zoom_target.raw_center.x - locked_center.x,
@@ -912,7 +913,7 @@ function on_timer()
                         }
 
                         if math.abs(diff.x) > track.x or math.abs(diff.y) > track.y then
-                            -- Cursor moved into the active border area, so resume tracking by clearing out the locked_center
+                            -- 光标进入活动边界区域，清除锁定中心以恢复追踪
                             locked_center = nil
                             locked_last_pos = {
                                 x = zoom_target.raw_center.x,
@@ -920,7 +921,7 @@ function on_timer()
                                 diff_x = diff.x,
                                 diff_y = diff.y
                             }
-                            log("Locked area exited - resume tracking")
+                            log("已离开锁定区域 — 恢复追踪")
                         end
                     end
 
@@ -929,7 +930,7 @@ function on_timer()
                         crop_filter_info.y = lerp(crop_filter_info.y, zoom_target.crop.y, follow_speed)
                         set_crop_settings(crop_filter_info)
 
-                        -- Check to see if the mouse has stopped moving long enough to create a new safe zone
+                        -- 检查鼠标是否已停止移动足够长时间，以创建新的安全区
                         if is_following_mouse and locked_center == nil and locked_last_pos ~= nil then
                             local diff = {
                                 x = math.abs(crop_filter_info.x - zoom_target.crop.x),
@@ -953,12 +954,12 @@ function on_timer()
                             end
 
                             if (lock and use_follow_auto_lock) or (diff.x <= follow_safezone_sensitivity and diff.y <= follow_safezone_sensitivity) then
-                                -- Make the new center the position of the current camera (which might not be the same as the mouse since we lerp towards it)
+                                -- 将新中心设为当前镜头位置（可能与鼠标位置不同，因为我们使用插值靠近鼠标）
                                 locked_center = {
                                     x = math.floor(crop_filter_info.x + zoom_target.crop.w * 0.5),
                                     y = math.floor(crop_filter_info.y + zoom_target.crop.h * 0.5)
                                 }
-                                log("Cursor stopped. Tracking locked to " .. locked_center.x .. ", " .. locked_center.y)
+                                log("光标停止。追踪锁定至 " .. locked_center.x .. ", " .. locked_center.y)
                             end
                         end
                     end
@@ -966,30 +967,30 @@ function on_timer()
             end
         end
 
-        -- Check to see if the animation is over
+        -- 检查动画是否结束
         if zoom_time >= 1 then
             local should_stop_timer = false
-            -- When we finished zooming out we remove the timer
+            -- 缩小完成后移除定时器
             if zoom_state == ZoomState.ZoomingOut then
-                log("Zoomed out")
+                log("已缩小")
                 zoom_state = ZoomState.None
                 should_stop_timer = true
             elseif zoom_state == ZoomState.ZoomingIn then
-                log("Zoomed in")
+                log("已放大")
                 zoom_state = ZoomState.ZoomedIn
-                -- If we finished zooming in and we arent tracking the mouse we can also remove the timer
+                -- 放大完成后若未追踪鼠标也移除定时器
                 should_stop_timer = (not use_auto_follow_mouse) and (not is_following_mouse)
 
                 if use_auto_follow_mouse then
                     is_following_mouse = true
-                    log("Tracking mouse is " .. (is_following_mouse and "on" or "off") .. " (due to auto follow)")
+                    log("鼠标追踪已" .. (is_following_mouse and "开启" or "关闭") .. "（因自动跟随）")
                 end
 
-                -- We set the current position as the center for the follow safezone
+                -- 将当前位置设为跟随安全区的中心
                 if is_following_mouse and follow_border < 50 then
                     zoom_target = get_target_position(zoom_info)
                     locked_center = { x = zoom_target.clamped_center.x, y = zoom_target.clamped_center.y }
-                    log("Cursor stopped. Tracking locked to " .. locked_center.x .. ", " .. locked_center.y)
+                    log("光标停止。追踪锁定至 " .. locked_center.x .. ", " .. locked_center.y)
                 end
             end
 
@@ -1014,7 +1015,7 @@ function on_socket_timer()
                 local x = tonumber(sx, 10)
                 local y = tonumber(sy, 10)
                 if not socket_mouse then
-                    log("Socket server client connected")
+                    log("套接字服务器客户端已连接")
                     socket_mouse = { x = x, y = y }
                 else
                     socket_mouse.x = x
@@ -1037,14 +1038,14 @@ function start_server()
             socket_server:set_blocking(false)
             socket_server:bind(address, socket_port)
             obs.timer_add(on_socket_timer, socket_poll)
-            log("Socket server listening on port " .. socket_port .. "...")
+            log("套接字服务器正在监听端口 " .. socket_port .. "...")
         end
     end
 end
 
 function stop_server()
     if socket_server ~= nil then
-        log("Socket server stopped")
+        log("套接字服务器已停止")
         obs.timer_remove(on_socket_timer)
         socket_server:close()
         socket_server = nil
@@ -1054,8 +1055,8 @@ end
 
 function set_crop_settings(crop)
     if crop_filter ~= nil and crop_filter_settings ~= nil then
-        -- Call into OBS to update our crop filter with the new settings
-        -- I have no idea how slow/expensive this is, so we could potentially only do it if something changes
+        -- 调用 OBS 更新裁剪滤镜设置
+        -- 不确定这个操作的性能开销，可以只在有变化时执行
         obs.obs_data_set_int(crop_filter_settings, "left", math.floor(crop.x))
         obs.obs_data_set_int(crop_filter_settings, "top", math.floor(crop.y))
         obs.obs_data_set_int(crop_filter_settings, "cx", math.floor(crop.w))
@@ -1065,30 +1066,29 @@ function set_crop_settings(crop)
 end
 
 function on_transition_start(t)
-    log("Transition started")
-    -- We need to remove the crop from the sceneitem as the transition starts to avoid
-    -- a delay with the rendering where you see the old crop and jump to the new one
+    log("转场开始")
+    -- 我们需要在转场开始时移除裁剪，以避免渲染延迟导致旧裁剪跳到新裁剪
     release_sceneitem()
 end
 
 function on_frontend_event(event)
     if event == obs.OBS_FRONTEND_EVENT_SCENE_CHANGED then
-        log("OBS Scene changed")
-        -- If the scene changes we attempt to find a new source with the same name in this new scene
-        -- TODO: There probably needs to be a way for users to specify what source they want to use in each scene
-        -- Scene change can happen before OBS has completely loaded, so we check for that here
+        log("OBS 场景已切换")
+        -- 如果场景改变，尝试在新场景中查找同名的源
+        -- TODO: 可能需要让用户指定在每个场景中使用哪个源
+        -- 场景切换可能在 OBS 完全加载前发生，因此需要检查
         if is_obs_loaded then
             refresh_sceneitem(true)
         end
     elseif event == obs.OBS_FRONTEND_EVENT_FINISHED_LOADING then
-        log("OBS Loaded")
-        -- Once loaded we perform our initial lookup
+        log("OBS 加载完成")
+        -- 加载完成后执行初始查找
         is_obs_loaded = true
         monitor_info = get_monitor_info(source)
         refresh_sceneitem(true)
     elseif event == obs.OBS_FRONTEND_EVENT_SCRIPTING_SHUTDOWN then
-        log("OBS Shutting down")
-        -- Add a fail-safe for unloading the script during shutdown
+        log("OBS 正在关闭")
+        -- 添加关闭时的卸载防护
         if is_script_loaded then
             script_unload()
         end
@@ -1096,7 +1096,7 @@ function on_frontend_event(event)
 end
 
 function on_update_transform()
-    -- Update the crop/size settings based on whatever the source in the current scene looks like
+    -- 根据当前场景中源的状态更新裁剪/尺寸设置
     if is_obs_loaded then
         refresh_sceneitem(true)
     end
@@ -1107,7 +1107,7 @@ end
 function on_settings_modified(props, prop, settings)
     local name = obs.obs_property_name(prop)
 
-    -- Show/Hide the settings based on if the checkbox is checked or not
+    -- 根据复选框状态显示/隐藏设置
     if name == "use_monitor_override" then
         local visible = obs.obs_data_get_bool(settings, "use_monitor_override")
         obs.obs_property_set_visible(obs.obs_properties_get(props, "monitor_override_label"), not visible)
@@ -1140,7 +1140,7 @@ function on_settings_modified(props, prop, settings)
 end
 
 ---
--- Write the current settings into the log for debugging and user issue reports
+-- 将当前设置写入日志，用于调试和问题报告
 function log_current_settings()
     local settings = {
         zoom_value = zoom_value,
@@ -1167,132 +1167,132 @@ function log_current_settings()
         version = VERSION
     }
 
-    log("OBS Version: " .. string.format("%.1f", major) .. "." .. minor)
-    log("Platform: " .. ffi.os)
-    log("Current settings:")
+    log("OBS 版本：" .. string.format("%.1f", major) .. "." .. minor)
+    log("平台：" .. ffi.os)
+    log("当前设置：")
     log(format_table(settings))
 end
 
 function on_print_help()
     local help = "\n----------------------------------------------------\n" ..
-        "Help Information for OBS-Zoom-To-Mouse v" .. VERSION .. "\n" ..
+        "OBS-Zoom-To-Mouse v" .. VERSION .. " 帮助信息\n" ..
         "https://github.com/BlankSourceCode/obs-zoom-to-mouse\n" ..
         "----------------------------------------------------\n" ..
-        "This script will zoom the selected display-capture source to focus on the mouse\n\n" ..
-        "Zoom Source: The display capture in the current scene to use for zooming\n" ..
-        "Zoom Factor: How much to zoom in by\n" ..
-        "Zoom Speed: The speed of the zoom in/out animation\n" ..
-        "Auto follow mouse: True to track the cursor while you are zoomed in\n" ..
-        "Follow outside bounds: True to track the cursor even when it is outside the bounds of the source\n" ..
-        "Follow Speed: The speed at which the zoomed area will follow the mouse when tracking\n" ..
-        "Follow Border: The %distance from the edge of the source that will re-enable mouse tracking\n" ..
-        "Lock Sensitivity: How close the tracking needs to get before it locks into position and stops tracking until you enter the follow border\n" ..
-        "Auto Lock on reverse direction: Automatically stop tracking if you reverse the direction of the mouse\n" ..
-        "Show all sources: True to allow selecting any source as the Zoom Source - You MUST set manual source position for non-display capture sources\n" ..
-        "Set manual source position: True to override the calculated x/y (topleft position), width/height (size), and scaleX/scaleY (canvas scale factor) for the selected source\n" ..
-        "X: The coordinate of the left most pixel of the source\n" ..
-        "Y: The coordinate of the top most pixel of the source\n" ..
-        "Width: The width of the source (in pixels)\n" ..
-        "Height: The height of the source (in pixels)\n" ..
-        "Scale X: The x scale factor to apply to the mouse position if the source size is not 1:1 (useful for cloned sources)\n" ..
-        "Scale Y: The y scale factor to apply to the mouse position if the source size is not 1:1 (useful for cloned sources)\n" ..
-        "Monitor Width: The width of the monitor that is showing the source (in pixels)\n" ..
-        "Monitor Height: The height of the monitor that is showing the source (in pixels)\n"
+        "此脚本用于将选中的显示器采集源放大到鼠标位置\n\n" ..
+        "缩放源：当前场景中用于缩放的显示器采集源\n" ..
+        "缩放倍数：放大倍数\n" ..
+        "缩放速度：放大/缩小动画的速度\n" ..
+        "自动跟随鼠标：开启后在放大状态下自动追踪鼠标\n" ..
+        "越界跟随：开启后即使鼠标超出源边界也会继续追踪\n" ..
+        "跟随速度：缩放区域跟随鼠标移动的速度\n" ..
+        "跟随边界：从源边缘开始的百分比距离，到达此区域时将重新启用鼠标追踪\n" ..
+        "锁定灵敏度：追踪锁定位置的精度阈值，锁定后将停止追踪，直到鼠标再次进入跟随边界\n" ..
+        "反向自动锁定：鼠标反向移动时自动停止追踪\n" ..
+        "显示所有源：开启后允许选择任意源作为缩放源 — 非显示器采集源必须手动设置源位置\n" ..
+        "手动设置源位置：开启后覆盖计算出的 x/y（左上角位置）、宽/高（尺寸）和 scaleX/scaleY（画布缩放比例）值\n" ..
+        "X：源最左侧像素的坐标\n" ..
+        "Y：源最顶部像素的坐标\n" ..
+        "宽度：源的宽度（像素）\n" ..
+        "高度：源的高度（像素）\n" ..
+        "缩放 X：如果源尺寸不是 1:1 时应用于鼠标位置的 X 轴缩放因子（对于克隆源有用）\n" ..
+        "缩放 Y：如果源尺寸不是 1:1 时应用于鼠标位置的 Y 轴缩放因子（对于克隆源有用）\n" ..
+        "显示器宽度：显示该源的显示器的宽度（像素）\n" ..
+        "显示器高度：显示该源的显示器的高度（像素）\n"
 
     if socket_available then
         help = help ..
-            "Enable remote mouse listener: True to start a UDP socket server that will listen for mouse position messages from a remote client, see: https://github.com/BlankSourceCode/obs-zoom-to-mouse-remote\n" ..
-            "Port: The port number to use for the socket server\n" ..
-            "Poll Delay: The time between updating the mouse position (in milliseconds)\n"
+            "启用远程鼠标监听：开启后启动 UDP 套接字服务器，监听来自远程客户端的鼠标位置消息，参见：https://github.com/BlankSourceCode/obs-zoom-to-mouse-remote\n" ..
+            "端口：套接字服务器使用的端口号\n" ..
+            "轮询延迟：更新鼠标位置的时间间隔（毫秒）\n"
     end
 
     help = help ..
-        "More Info: Show this text in the script log\n" ..
-        "Enable debug logging: Show additional debug information in the script log\n\n"
+        "更多信息：在脚本日志中显示此文本\n" ..
+        "启用调试日志：在脚本日志中显示额外的调试信息\n\n"
 
     obs.script_log(obs.OBS_LOG_INFO, help)
 end
 
 function script_description()
-    return "Zoom the selected display-capture source to focus on the mouse"
+    return "将选中的显示器采集源放大到鼠标位置"
 end
 
 function script_properties()
     local props = obs.obs_properties_create()
 
-    -- Populate the sources list with the known display-capture sources (OBS calls them 'monitor_capture' internally even though the UI says 'Display Capture')
-    local sources_list = obs.obs_properties_add_list(props, "source", "Zoom Source", obs.OBS_COMBO_TYPE_LIST,
+    -- 填充已知的显示器采集源列表（OBS 内部称为 'monitor_capture'，尽管 UI 中显示为"显示器采集"）
+    local sources_list = obs.obs_properties_add_list(props, "source", "缩放源", obs.OBS_COMBO_TYPE_LIST,
         obs.OBS_COMBO_FORMAT_STRING)
 
     populate_zoom_sources(sources_list)
 
-    local refresh_sources = obs.obs_properties_add_button(props, "refresh", "Refresh zoom sources",
+    local refresh_sources = obs.obs_properties_add_button(props, "refresh", "刷新缩放源列表",
         function()
             populate_zoom_sources(sources_list)
             monitor_info = get_monitor_info(source)
             return true
         end)
     obs.obs_property_set_long_description(refresh_sources,
-        "Click to re-populate Zoom Sources dropdown with available sources")
+        "点击重新填充缩放源下拉列表")
 
-    -- Add the rest of the settings UI
-    local zoom = obs.obs_properties_add_float(props, "zoom_value", "Zoom Factor", 1, 5, 0.5)
-    local zoom_speed = obs.obs_properties_add_float_slider(props, "zoom_speed", "Zoom Speed", 0.01, 1, 0.01)
-    local follow = obs.obs_properties_add_bool(props, "follow", "Auto follow mouse ")
+    -- 添加其余设置界面
+    local zoom = obs.obs_properties_add_float(props, "zoom_value", "缩放倍数", 1, 5, 0.5)
+    local zoom_speed = obs.obs_properties_add_float_slider(props, "zoom_speed", "缩放速度", 0.01, 1, 0.01)
+    local follow = obs.obs_properties_add_bool(props, "follow", "自动跟随鼠标")
     obs.obs_property_set_long_description(follow,
-        "When enabled mouse traking will auto-start when zoomed in without waiting for tracking toggle hotkey")
+        "开启后，放大状态下鼠标追踪将自动启动，无需等待按下追踪切换快捷键")
 
-    local follow_outside_bounds = obs.obs_properties_add_bool(props, "follow_outside_bounds", "Follow outside bounds ")
+    local follow_outside_bounds = obs.obs_properties_add_bool(props, "follow_outside_bounds", "越界跟随")
     obs.obs_property_set_long_description(follow_outside_bounds,
-        "When enabled the mouse will be tracked even when the cursor is outside the bounds of the zoom source")
+        "开启后，即使鼠标超出缩放源边界也会继续追踪")
 
-    local follow_speed = obs.obs_properties_add_float_slider(props, "follow_speed", "Follow Speed", 0.01, 1, 0.01)
-    local follow_border = obs.obs_properties_add_int_slider(props, "follow_border", "Follow Border", 0, 50, 1)
+    local follow_speed = obs.obs_properties_add_float_slider(props, "follow_speed", "跟随速度", 0.01, 1, 0.01)
+    local follow_border = obs.obs_properties_add_int_slider(props, "follow_border", "跟随边界", 0, 50, 1)
     local safezone_sense = obs.obs_properties_add_int_slider(props,
-        "follow_safezone_sensitivity", "Lock Sensitivity", 1, 20, 1)
-    local follow_auto_lock = obs.obs_properties_add_bool(props, "follow_auto_lock", "Auto Lock on reverse direction ")
+        "follow_safezone_sensitivity", "锁定灵敏度", 1, 20, 1)
+    local follow_auto_lock = obs.obs_properties_add_bool(props, "follow_auto_lock", "反向自动锁定")
     obs.obs_property_set_long_description(follow_auto_lock,
-        "When enabled moving the mouse to edge of the zoom source will begin tracking,\n" ..
-        "but moving back towards the center will stop tracking simliar to panning the camera in a RTS game")
+        "开启后，鼠标移动到缩放源边缘将开始追踪，\n" ..
+        "但移回中心时将停止追踪，类似 RTS 游戏中的镜头平移")
 
-    local allow_all = obs.obs_properties_add_bool(props, "allow_all_sources", "Allow any zoom source ")
-    obs.obs_property_set_long_description(allow_all, "Enable to allow selecting any source as the Zoom Source\n" ..
-        "You MUST set manual source position for non-display capture sources")
+    local allow_all = obs.obs_properties_add_bool(props, "allow_all_sources", "允许任何缩放源")
+    obs.obs_property_set_long_description(allow_all, "开启后允许选择任意源作为缩放源\n" ..
+        "非显示器采集源必须手动设置源位置")
 
     local override_props = obs.obs_properties_create();
     local override_label = obs.obs_properties_add_text(override_props, "monitor_override_label", "", obs.OBS_TEXT_INFO)
     local override_x = obs.obs_properties_add_int(override_props, "monitor_override_x", "X", -10000, 10000, 1)
     local override_y = obs.obs_properties_add_int(override_props, "monitor_override_y", "Y", -10000, 10000, 1)
-    local override_w = obs.obs_properties_add_int(override_props, "monitor_override_w", "Width", 0, 10000, 1)
-    local override_h = obs.obs_properties_add_int(override_props, "monitor_override_h", "Height", 0, 10000, 1)
-    local override_sx = obs.obs_properties_add_float(override_props, "monitor_override_sx", "Scale X ", 0, 100, 0.01)
-    local override_sy = obs.obs_properties_add_float(override_props, "monitor_override_sy", "Scale Y ", 0, 100, 0.01)
-    local override_dw = obs.obs_properties_add_int(override_props, "monitor_override_dw", "Monitor Width ", 0, 10000, 1)
-    local override_dh = obs.obs_properties_add_int(override_props, "monitor_override_dh", "Monitor Height ", 0, 10000, 1)
-    local override = obs.obs_properties_add_group(props, "use_monitor_override", "Set manual source position ",
+    local override_w = obs.obs_properties_add_int(override_props, "monitor_override_w", "宽度", 0, 10000, 1)
+    local override_h = obs.obs_properties_add_int(override_props, "monitor_override_h", "高度", 0, 10000, 1)
+    local override_sx = obs.obs_properties_add_float(override_props, "monitor_override_sx", "缩放 X", 0, 100, 0.01)
+    local override_sy = obs.obs_properties_add_float(override_props, "monitor_override_sy", "缩放 Y", 0, 100, 0.01)
+    local override_dw = obs.obs_properties_add_int(override_props, "monitor_override_dw", "显示器宽度", 0, 10000, 1)
+    local override_dh = obs.obs_properties_add_int(override_props, "monitor_override_dh", "显示器高度", 0, 10000, 1)
+    local override = obs.obs_properties_add_group(props, "use_monitor_override", "手动设置源位置",
         obs.OBS_GROUP_CHECKABLE, override_props)
 
     obs.obs_property_set_long_description(override_label,
-        "When enabled the specified size/position settings will be used for the zoom source instead of the auto-calculated ones")
-    obs.obs_property_set_long_description(override_sx, "Usually 1 - unless you are using a scaled source")
-    obs.obs_property_set_long_description(override_sy, "Usually 1 - unless you are using a scaled source")
-    obs.obs_property_set_long_description(override_dw, "X resolution of your montior")
-    obs.obs_property_set_long_description(override_dh, "Y resolution of your monitor")
+        "开启后，将使用指定的尺寸/位置设置替代自动计算的值")
+    obs.obs_property_set_long_description(override_sx, "通常为 1，除非你使用了缩放源")
+    obs.obs_property_set_long_description(override_sy, "通常为 1，除非你使用了缩放源")
+    obs.obs_property_set_long_description(override_dw, "显示器的 X 分辨率")
+    obs.obs_property_set_long_description(override_dh, "显示器的 Y 分辨率")
 
     if socket_available then
         local socket_props = obs.obs_properties_create();
         local r_label = obs.obs_properties_add_text(socket_props, "socket_label", "", obs.OBS_TEXT_INFO)
-        local r_port = obs.obs_properties_add_int(socket_props, "socket_port", "Port ", 1024, 65535, 1)
-        local r_poll = obs.obs_properties_add_int(socket_props, "socket_poll", "Poll Delay (ms) ", 0, 1000, 1)
-        local socket = obs.obs_properties_add_group(props, "use_socket", "Enable remote mouse listener ",
+        local r_port = obs.obs_properties_add_int(socket_props, "socket_port", "端口", 1024, 65535, 1)
+        local r_poll = obs.obs_properties_add_int(socket_props, "socket_poll", "轮询延迟(毫秒)", 0, 1000, 1)
+        local socket = obs.obs_properties_add_group(props, "use_socket", "启用远程鼠标监听",
             obs.OBS_GROUP_CHECKABLE, socket_props)
 
         obs.obs_property_set_long_description(r_label,
-            "When enabled a UDP socket server will listen for mouse position messages from a remote client")
+            "开启后，UDP 套接字服务器将监听来自远程客户端的鼠标位置消息")
         obs.obs_property_set_long_description(r_port,
-            "You must restart the server after changing the port (Uncheck then re-check 'Enable remote mouse listener')")
+            "更改端口后必须重启服务器（取消再重新勾选"启用远程鼠标监听"）")
         obs.obs_property_set_long_description(r_poll,
-            "You must restart the server after changing the poll delay (Uncheck then re-check 'Enable remote mouse listener')")
+            "更改轮询延迟后必须重启服务器（取消再重新勾选"启用远程鼠标监听"）")
 
         obs.obs_property_set_visible(r_label, not use_socket)
         obs.obs_property_set_visible(r_port, use_socket)
@@ -1300,14 +1300,14 @@ function script_properties()
         obs.obs_property_set_modified_callback(socket, on_settings_modified)
     end
 
-    -- Add a button for more information
-    local help = obs.obs_properties_add_button(props, "help_button", "More Info", on_print_help)
+    -- 添加"更多信息"按钮
+    local help = obs.obs_properties_add_button(props, "help_button", "更多信息", on_print_help)
     obs.obs_property_set_long_description(help,
-        "Click to show help information (via the script log)")
+        "点击显示帮助信息（通过脚本日志输出）")
 
-    local debug = obs.obs_properties_add_bool(props, "debug_logs", "Enable debug logging ")
+    local debug = obs.obs_properties_add_bool(props, "debug_logs", "启用调试日志")
     obs.obs_property_set_long_description(debug,
-        "When enabled the script will output diagnostics messages to the script log (useful for debugging/github issues)")
+        "开启后，脚本将输出诊断信息到脚本日志（用于调试/报告问题）")
 
     obs.obs_property_set_visible(override_label, not use_monitor_override)
     obs.obs_property_set_visible(override_x, use_monitor_override)
@@ -1329,19 +1329,19 @@ end
 function script_load(settings)
     sceneitem_info_orig = nil
 
-    -- Workaround for detecting if OBS is already loaded and we were reloaded using "Reload Scripts"
+    -- 检测 OBS 是否已加载（以支持"重新加载脚本"功能）
     local current_scene = obs.obs_frontend_get_current_scene()
-    is_obs_loaded = current_scene ~= nil -- Current scene is nil on first OBS load
+    is_obs_loaded = current_scene ~= nil -- 首次加载时当前场景为 nil
     obs.obs_source_release(current_scene)
 
-    -- Add our hotkey
-    hotkey_zoom_id = obs.obs_hotkey_register_frontend("toggle_zoom_hotkey", "Toggle zoom to mouse",
+    -- 注册我们的快捷键
+    hotkey_zoom_id = obs.obs_hotkey_register_frontend("toggle_zoom_hotkey", "切换缩放至鼠标",
         on_toggle_zoom)
 
-    hotkey_follow_id = obs.obs_hotkey_register_frontend("toggle_follow_hotkey", "Toggle follow mouse during zoom",
+    hotkey_follow_id = obs.obs_hotkey_register_frontend("toggle_follow_hotkey", "切换鼠标跟随",
         on_toggle_follow)
 
-    -- Attempt to reload existing hotkey bindings if we can find any
+    -- 尝试重新加载已有的快捷键绑定
     local hotkey_save_array = obs.obs_data_get_array(settings, "obs_zoom_to_mouse.hotkey.zoom")
     obs.obs_hotkey_load(hotkey_zoom_id, hotkey_save_array)
     obs.obs_data_array_release(hotkey_save_array)
@@ -1350,7 +1350,7 @@ function script_load(settings)
     obs.obs_hotkey_load(hotkey_follow_id, hotkey_save_array)
     obs.obs_data_array_release(hotkey_save_array)
 
-    -- Load any other settings
+    -- 加载其他设置
     zoom_value = obs.obs_data_get_double(settings, "zoom_value")
     zoom_speed = obs.obs_data_get_double(settings, "zoom_speed")
     use_auto_follow_mouse = obs.obs_data_get_bool(settings, "follow")
@@ -1380,12 +1380,12 @@ function script_load(settings)
         log_current_settings()
     end
 
-    -- Add the transition_start event handlers to each transition (the global source_transition_start event never fires)
+    -- 为每个转场添加 transition_start 事件处理器（全局 source_transition_start 事件不会触发）
     local transitions = obs.obs_frontend_get_transitions()
     if transitions ~= nil then
         for i, s in pairs(transitions) do
             local name = obs.obs_source_get_name(s)
-            log("Adding transition_start listener to " .. name)
+            log("正在为 " .. name .. " 添加 transition_start 监听器")
             local handler = obs.obs_source_get_signal_handler(s)
             obs.signal_handler_connect(handler, "transition_start", on_transition_start)
         end
@@ -1393,8 +1393,8 @@ function script_load(settings)
     end
 
     if ffi.os == "Linux" and not x11_display then
-        log("ERROR: Could not get X11 Display for Linux\n" ..
-            "Mouse position will be incorrect.")
+        log("错误：无法获取 Linux 的 X11 Display\n" ..
+            "鼠标位置将不正确。")
     end
 
     source_name = ""
@@ -1405,8 +1405,8 @@ end
 function script_unload()
     is_script_loaded = false
 
-    -- Clean up the memory usage
-    if major > 29.1 or (major == 29.1 and minor > 2) then -- 29.1.2 and below seems to crash if you do this, so we ignore it as the script is closing anyway
+    -- 清理内存使用
+    if major > 29.1 or (major == 29.1 and minor > 2) then -- 29.1.2 及以下版本执行此操作会导致崩溃，脚本关闭时忽略
         local transitions = obs.obs_frontend_get_transitions()
         if transitions ~= nil then
             for i, s in pairs(transitions) do
@@ -1434,7 +1434,7 @@ function script_unload()
 end
 
 function script_defaults(settings)
-    -- Default values for the script
+    -- 脚本默认值
     obs.obs_data_set_default_double(settings, "zoom_value", 2)
     obs.obs_data_set_default_double(settings, "zoom_speed", 0.06)
     obs.obs_data_set_default_bool(settings, "follow", true)
@@ -1460,7 +1460,7 @@ function script_defaults(settings)
 end
 
 function script_save(settings)
-    -- Save the custom hotkey information
+    -- 保存自定义快捷键信息
     if hotkey_zoom_id ~= nil then
         local hotkey_save_array = obs.obs_hotkey_save(hotkey_zoom_id)
         obs.obs_data_set_array(settings, "obs_zoom_to_mouse.hotkey.zoom", hotkey_save_array)
@@ -1489,7 +1489,7 @@ function script_update(settings)
     local old_port = socket_port
     local old_poll = socket_poll
 
-    -- Update the settings
+    -- 更新设置
     source_name = obs.obs_data_get_string(settings, "source")
     zoom_value = obs.obs_data_get_double(settings, "zoom_value")
     zoom_speed = obs.obs_data_get_double(settings, "zoom_speed")
@@ -1514,12 +1514,12 @@ function script_update(settings)
     socket_poll = obs.obs_data_get_int(settings, "socket_poll")
     debug_logs = obs.obs_data_get_bool(settings, "debug_logs")
 
-    -- Only do the expensive refresh if the user selected a new source
+    -- 仅在用户选择了新源时才执行开销较大的刷新
     if source_name ~= old_source_name and is_obs_loaded then
         refresh_sceneitem(true)
     end
 
-    -- Update the monitor_info if the settings changed
+    -- 如果设置发生改变，更新 monitor_info
     if source_name ~= old_source_name or
         use_monitor_override ~= old_override or
         monitor_override_x ~= old_x or
@@ -1553,7 +1553,7 @@ function populate_zoom_sources(list)
     local sources = obs.obs_enum_sources()
     if sources ~= nil then
         local dc_info = get_dc_info()
-        obs.obs_property_list_add_string(list, "<None>", "obs-zoom-to-mouse-none")
+        obs.obs_property_list_add_string(list, "<无>", "obs-zoom-to-mouse-none")
         for _, source in ipairs(sources) do
             local source_type = obs.obs_source_get_id(source)
             if source_type == dc_info.source_id or allow_all_sources then

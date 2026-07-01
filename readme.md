@@ -1,139 +1,140 @@
 # OBS-Zoom-To-Mouse
 
-An OBS lua script to zoom a display-capture source to focus on the mouse. 
+一个 OBS Lua 脚本，用于将显示器采集源放大到鼠标位置。
 
-I made this for my own use when recording videos as I wanted a way to zoom into my IDE when highlighting certain sections of code. My particular setup didn't seem to work very well with the existing zooming solutions so I created this.
+> 本项目基于 [BlankSourceCode/obs-zoom-to-mouse](https://github.com/BlankSourceCode/obs-zoom-to-mouse) 汉化，由 DeepSeek V4 Flash 翻译。
 
-Built with OBS v29.1.3
+在录制视频时，我想突出显示 IDE 中的某段代码，但现有的缩放方案在我的特定设置下效果不佳，于是制作了这个脚本。
 
-Now works on **Windows**, **Linux**, and **Mac**
+基于 OBS v29.1.3 开发。
 
-Inspired by [tryptech](https://github.com/tryptech)'s [obs-zoom-and-follow](https://github.com/tryptech/obs-zoom-and-follow)
+支持 **Windows**、**Linux** 和 **Mac**。
 
-## Example
-![Usage Demo](obs-zoom-to-mouse.gif)
+灵感来自 [tryptech](https://github.com/tryptech) 的 [obs-zoom-and-follow](https://github.com/tryptech/obs-zoom-and-follow)
 
-## Install
-1. Git clone the repo (or just save a copy of `obs-zoom-to-mouse.lua`)
-1. Launch OBS
-1. In OBS, add a `Display Capture` source (if you don't have one already)
-1. In OBS, open Tools -> Scripts
-1. In the Scripts window, press the `+` button to add a new script
-1. Find and add the `obs-zoom-to-mouse.lua` script
-1. For best results use the following settings on your `Display Capture` source
-   * Transform:
-      * Positional Alignment - `Top Left`
-      * Bounding Box type -  `Scale to inner bounds`
-      * Alignment in Bounding Box - `Top Left`
-      * Crop - All **zeros**
-   * If you want to crop the display, add a new Filter -> `Crop/Pad`
-      * Relative - `False`
-      * X - Amount to crop from left side
-      * Y - Amount to crop form top side
-      * Width - Full width of display minus the value of X + amount to crop from right side
-      * Height - Full height of display minus the value of Y + amount to crop from bottom side
-   
-   **Note:** If you don't use this form of setup for your display source (E.g. you have bounding box set to `No bounds` or you have a `Crop` set on the transform), the script will attempt to **automatically change your settings** to zoom compatible ones. 
-   This may have undesired effects on your layout (or just not work at all).
+## 示例
+![使用演示](obs-zoom-to-mouse.gif)
 
-   **Note:** If you change your desktop display properties in Windows (such as moving a monitor, changing your primary display, updating the orientation of a display), you will need to re-add your display capture source in OBS for it to update the values that the script uses for its auto calculations. You will then need to reload the script.
+## 安装
+1. 克隆本仓库（或直接保存 `obs-zoom-to-mouse.lua`）
+1. 启动 OBS
+1. 在 OBS 中添加一个`显示器采集`源（如果还没有的话）
+1. 在 OBS 中，打开"工具 -> 脚本"
+1. 在脚本窗口中，点击 `+` 按钮添加新脚本
+1. 找到并添加 `obs-zoom-to-mouse.lua` 脚本
+1. 为获得最佳效果，请对你的`显示器采集`源进行以下设置：
+   * 变换：
+      * 位置对齐 - `左上`
+      * 边界框类型 - `缩放至内边界`
+      * 边界框内对齐 - `左上`
+      * 裁剪 - 全部为 **0**
+   * 如果想要裁剪画面，添加一个新的滤镜 -> `裁剪/填充`
+      * 相对 - `否`
+      * X - 左侧裁剪量
+      * Y - 顶部裁剪量
+      * 宽度 - 显示器完整宽度减去 X 值再加上右侧裁剪量
+      * 高度 - 显示器完整高度减去 Y 值再加上底部裁剪量
 
-## Usage
-1. You can customize the following settings in the OBS Scripts window:
-   * **Zoom Source**: The display capture in the current scene to use for zooming
-   * **Zoom Factor**: How much to zoom in by
-   * **Zoom Speed**: The speed of the zoom in/out animation
-   * **Auto follow mouse**: True to track the cursor automatically while you are zoomed in, instead of waiting for the `Toggle follow` hotkey to be pressed first
-   * **Follow outside bounds**: True to track the cursor even when it is outside the bounds of the source
-   * **Follow Speed**: The speed at which the zoomed area will follow the mouse when tracking
-   * **Follow Border**: The %distance from the edge of the source that will re-enable mouse tracking
-   * **Lock Sensitivity**: How close the tracking needs to get before it locks into position and stops tracking until you enter the follow border
-   * **Auto Lock on reverse direction**: Automatically stop tracking if you reverse the direction of the mouse.
-   * **Show all sources**: True to allow selecting any source as the Zoom Source - Note: You **MUST** set manual source position for non-display capture sources
-   * **Set manual source position**: True to override the calculated x/y (topleft position), width/height (size), and scaleX/scaleY (canvas scale factor) for the selected source. This is essentially the area of the desktop that the selected zoom source represents. Usually the script can calculate this, but if you are using a non-display capture source, or if the script gets it wrong, you can manually set the values.
-   * **X**: The coordinate of the left most pixel of the source
-   * **Y**: The coordinate of the top most pixel of the source
-   * **Width**: The width of the source (in pixels)
-   * **Height**: The height of the source (in pixels)
-   * **Scale X**: The x scale factor to apply to the mouse position if the source is not 1:1 pixel size (normally left as 1, but useful for cloned sources that have been scaled)
-   * **Scale Y**: The y scale factor to apply to the mouse position if the source is not 1:1 pixel size (normally left as 1, but useful for cloned sources that have been scaled)
-   * **Monitor Width**: The width of the monitor that is showing the source (in pixels)
-   * **Monitor Height**: The height of the monitor that is showing the source (in pixels)
-   * **More Info**: Show this text in the script log
-   * **Enable debug logging**: Show additional debug information in the script log
+   **注意：** 如果你的显示器源没有使用上述设置（例如边界框设置为`无边界`，或在变换上设置了`裁剪`），脚本将**尝试自动修改你的设置**以适配缩放。
+   这可能会对你的布局产生意外影响（或完全无效）。
 
-1. In OBS, open File -> Settings -> Hotkeys 
-   * Add a hotkey for `Toggle zoom to mouse` to zoom in and out
-   * Add a hotkey for `Toggle follow mouse during zoom` to turn mouse tracking on and off (*Optional*)
+   **注意：** 如果你在 Windows 中更改了桌面显示属性（如移动显示器、更改主显示器、更新显示器方向），则需要在 OBS 中重新添加显示器采集源，以便更新脚本自动计算需要的值。然后需要重新加载脚本。
 
-### Dual Machine Support
-1. The script also has some **basic** dual machine setup support. By using my related project [obs-zoom-to-mouse-remote](https://github.com/BlankSourceCode/obs-zoom-to-mouse-remote) you will be able to track the mouse on your second machine
-1. When you have [ljsocket.lua](https://github.com/BlankSourceCode/obs-zoom-to-mouse-remote) in the same directory as `obs-zoom-to-mouse.lua`, the following settings will also be available:
-   * **Enable remote mouse listener**: True to start a UDP socket server that will listen for mouse position messages from a remote client
-   * **Port**: The port number to use for the socket server
-   * **Poll Delay**: The time between updating the mouse position (in milliseconds)
-   * For more information see [obs-zoom-to-mouse-remote](https://github.com/BlankSourceCode/obs-zoom-to-mouse-remote)
+## 使用方法
+1. 你可以在 OBS 脚本窗口中自定义以下设置：
+   * **缩放源**：当前场景中用于缩放的显示器采集源
+   * **缩放倍数**：放大倍数
+   * **缩放速度**：放大/缩小动画的速度
+   * **自动跟随鼠标**：开启后，在放大状态下自动追踪鼠标，无需先按下`切换跟随`快捷键
+   * **越界跟随**：开启后，即使鼠标超出源边界也会继续追踪
+   * **跟随速度**：缩放区域跟随鼠标移动的速度
+   * **跟随边界**：从源边缘开始的百分比距离，到达此区域时将重新启用鼠标追踪
+   * **锁定灵敏度**：追踪锁定位置的精度阈值，锁定后将停止追踪，直到鼠标再次进入跟随边界
+   * **反向自动锁定**：鼠标反向移动时自动停止追踪
+   * **显示所有源**：开启后允许选择任意源作为缩放源 — 注意：非显示器采集源**必须**手动设置源位置
+   * **手动设置源位置**：开启后覆盖计算出的 x/y（左上角位置）、宽/高（尺寸）和 scaleX/scaleY（画布缩放比例）值，用于所选源。这本质上是所选缩放源在桌面中代表的区域。通常脚本可以自动计算，但如果你使用的是非显示器采集源，或者脚本计算有误，你可以手动设置这些值。
+   * **X**：源最左侧像素的坐标
+   * **Y**：源最顶部像素的坐标
+   * **宽度**：源的宽度（像素）
+   * **高度**：源的高度（像素）
+   * **缩放 X**：如果源不是 1:1 像素尺寸时应用于鼠标位置的 X 轴缩放因子（通常保持为 1，对于已缩放的克隆源有用）
+   * **缩放 Y**：如果源不是 1:1 像素尺寸时应用于鼠标位置的 Y 轴缩放因子（通常保持为 1，对于已缩放的克隆源有用）
+   * **显示器宽度**：显示该源的显示器的宽度（像素）
+   * **显示器高度**：显示该源的显示器的高度（像素）
+   * **更多信息**：在脚本日志中显示帮助文本
+   * **启用调试日志**：在脚本日志中显示额外的调试信息
 
-### More information on how mouse tracking works
-When you press the `Toggle zoom` hotkey the script will use the current mouse position as the center of the zoom. The script will then animate the width/height values of a crop/pan filter so it appears to zoom into that location. If you have `Auto follow mouse` turned on, then the x/y values of the filter will also change to keep the mouse in view as it is animating the zoom. Once the animation is complete, the script gives you a "safe zone" to move your cursor in without it moving the "camera". The idea was that you'd want to zoom in somewhere and move your mouse around to highlight code or whatever, without the screen moving so it would be easier to read text in the video.
+1. 在 OBS 中，打开"文件 -> 设置 -> 快捷键"
+   * 为`切换缩放至鼠标`添加快捷键以放大/缩小
+   * 为`切换跟随鼠标`添加快捷键以开关鼠标追踪（*可选*）
 
-When you move your mouse to the edge of the zoom area, it will then start tracking the cursor and follow it around at the `Follow Speed`. It will continue to follow the cursor until you hold the mouse still for some amount of time determined by `Lock Sensitivity` at which point it will stop following and give you that safe zone again but now at the new center of the zoom.
+### 双机支持
+1. 该脚本还提供了**基本**的双机设置支持。通过我相关的项目 [obs-zoom-to-mouse-remote](https://github.com/BlankSourceCode/obs-zoom-to-mouse-remote)，你将能够在第二台机器上追踪鼠标
+1. 当 `ljsocket.lua`（来自 [obs-zoom-to-mouse-remote](https://github.com/BlankSourceCode/obs-zoom-to-mouse-remote)）与 `obs-zoom-to-mouse.lua` 位于同一目录时，将提供以下额外设置：
+   * **启用远程鼠标监听**：开启后启动一个 UDP 套接字服务器，监听来自远程客户端的鼠标位置消息
+   * **端口**：套接字服务器使用的端口号
+   * **轮询延迟**：更新鼠标位置的时间间隔（毫秒）
+   * 更多信息请参阅 [obs-zoom-to-mouse-remote](https://github.com/BlankSourceCode/obs-zoom-to-mouse-remote)
 
-How close you need to get to the edge of the zoom to trigger the 'start following mode' is determined by the `Follow Border` setting. This value is a pertentage of the area from the edge. If you set this to 0%, it means that you need to move the mouse to the very edge of the area to trigger mouse tracking. Something like 4% will give you a small border around the area. Setting it to full 50% causes it to begin following the mouse whenever it gets closer than 50% to an edge, which means it will follow the cursor *all the time* essentially removing the "safe zone".
+### 鼠标追踪工作原理
+按下`切换缩放`快捷键时，脚本使用当前鼠标位置作为缩放中心。脚本会动画修改裁剪/填充滤镜的宽/高值，从而实现放大效果。如果开启了`自动跟随鼠标`，滤镜的 x/y 值也会在动画过程中随之变化，以保持鼠标在视野中。动画完成后，脚本会提供一个"安全区"，你可以在此区域内移动鼠标而不会移动"镜头"。这样设计的目的是让你在放大状态下移动鼠标突出显示代码等内容时，画面不会移动，方便读者阅读视频中的文字。
 
-You can also modify this behavior with the `Auto Lock on reverse direction` setting, which attempts to make the follow work more like camera panning in a video game. When moving your mouse to the edge of the screen (how close determined by `Follow Border`) it will cause the camera to pan in that direction. Instead of continuing to track the mouse until you keep it still, with this setting it will also stop tracking immediately if you move your mouse back towards the center.
+当鼠标移动到缩放区域的边缘时，脚本将以`跟随速度`追踪鼠标并随之移动。它会持续跟随，直到鼠标静止一段时间（由`锁定灵敏度`决定），此时会在新中心位置再次建立安全区，停止跟随。
 
-### More information on 'Show All Sources'
-If you enable the `Show all sources` option, you will be able to select any OBS source as the `Zoom Source`. This includes **any** non-display capture items such as cloned sources, browsers, or windows (or even things like audio input - which really won't work!).
+触发"开始跟随模式"的距离由`跟随边界`设置决定。这个值是边缘区域的百分比。如果设置为 0%，表示需要将鼠标移到区域最边缘才能触发追踪。设置为 4% 左右会在区域边缘提供一个小边界。设置为 50% 则会在鼠标距离边缘 50% 时就开始追踪，这意味着它会**始终**跟随鼠标，实际上移除了"安全区"。
 
-Selecting a non-display capture zoom source means the script will **not be able to automatically calculate the position and size of the source**, so zooming and tracking the mouse position will be wrong!
+你还可以使用`反向自动锁定`设置来修改此行为，使其更像游戏中的镜头平移。当鼠标移动到屏幕边缘时（距离由`跟随边界`决定），镜头会向该方向平移。开启此设置后，如果你将鼠标移回中心，它会立即停止追踪，而不是一直等到鼠标静止。
 
-To fix this, you MUST manually enter the size and position of your selected zoom source by enabling the `Set manual source position` option and filling in the `X`, `Y`, `Width`, and `Height` values. These values are the pixel topleft position and pixel size of the source on your overall desktop. You may also need to set the `Scale X` and `Scale Y` values if you find that the mouse position is incorrectly offset when you zoom, which is due to the source being scaled differently than the monitor you are using.
+### 关于"显示所有源"
+如果启用`显示所有源`选项，你可以选择任何 OBS 源作为`缩放源`。这包括**任何**非显示器采集项目，如克隆源、浏览器、窗口（甚至音频输入——这实际上行不通！）。
 
-Example 1 - A 500x300 window positioned at the center of a single 1000x900 monitor, would need the following values:
-   * X = 250 (center of monitor X 500 - half width of window 250)
-   * Y = 300 (center of monitor Y 450 - half height of window 150)
-   * Width = 500 (window width)
-   * Height = 300 (window height)
+选择非显示器采集源意味着脚本将**无法自动计算源的位置和大小**，因此缩放和鼠标位置追踪将出错！
 
-Example 2 - A cloned display-capture source which is using the second 1920x1080 monitor of a two monitor side by side setup:
-   * X = 1921 (the left-most pixel position of the second monitor because it is immediately next to the other 1920 monitor)
-   * Y = 0 (the top-most pixel position of the monitor)
-   * Width = 1920 (monitor width)
-   * Height = 1080 (monitor height)
+要解决此问题，你必须通过启用`手动设置源位置`选项并填写`X`、`Y`、`宽度`和`高度`值来手动输入所选缩放源的大小和位置。这些值是源在整个桌面中的像素左上角位置和像素尺寸。如果发现鼠标位置在缩放时偏移不正确，可能还需要设置`缩放 X`和`缩放 Y`值，这是因为源的缩放比例与你使用的显示器不同。
 
-Example 3 - A cloned scene source which is showing a 1920x1080 monitor but the scene canvas size is scaled down to 1024x768 setup:
-   * X = 0 (the left-most pixel position of the monitor)
-   * Y = 0 (the top-most pixel position of the monitor)
-   * Width = 1920 (monitor width)
-   * Height = 1080 (monitor height)
-   * Scale X = 0.53 (canvas width 1024 / monitor width 1920)
-   * Scale Y = 0.71 (canvas height 768 / monitor height 1080)
+示例 1 — 一个位于单台 1000×900 显示器中央的 500×300 窗口，需要以下值：
+   * X = 250（显示器中心 X 500 - 窗口宽度的一半 250）
+   * Y = 300（显示器中心 Y 450 - 窗口高度的一半 150）
+   * 宽度 = 500（窗口宽度）
+   * 高度 = 300（窗口高度）
 
-I don't know of an easy way of getting these values automatically otherwise I would just have the script do it for you.
+示例 2 — 一个克隆的显示器采集源，使用双屏并排设置中的第二台 1920×1080 显示器：
+   * X = 1921（第二个显示器的最左侧像素位置，因为它紧邻第一个 1920 显示器）
+   * Y = 0（显示器的最顶部像素位置）
+   * 宽度 = 1920（显示器宽度）
+   * 高度 = 1080（显示器高度）
 
-Note: If you are also using a `transform crop` on the non-display capture source, you will need to manually convert it to a `Crop/Pad Filter` instead (the script has trouble trying to auto convert it for you for non-display sources).
+示例 3 — 一个克隆的场景源，显示 1920×1080 显示器但场景画布缩放到 1024×768：
+   * X = 0（显示器的最左侧像素位置）
+   * Y = 0（显示器的最顶部像素位置）
+   * 宽度 = 1920（显示器宽度）
+   * 高度 = 1080（显示器高度）
+   * 缩放 X = 0.53（画布宽度 1024 / 显示器宽度 1920）
+   * 缩放 Y = 0.71（画布高度 768 / 显示器高度 1080）
 
-## Known Limitations
-* Only works on `Display Capture` sources (automatically)
-   * In theory it should be able to work on window captures too, if there was a way to get the mouse position relative to that specific window
-   * You can now enable the [`Show all sources`](#More-information-on-'Show-All-Sources') option to select a non-display capture source, but you MUST set manual source position values
+如果有简便的方法能自动获取这些值，我早就让脚本帮你自动完成了。
 
-* Using Linux:
-   * You may need to install the [loopback package](https://obsproject.com/forum/threads/obs-no-display-screen-capture-option.156314/) to enable `XSHM` display capture sources. This source acts most like the ones used by Windows and Mac so the script can auto calculate sizes for you.
-   * The script will also work with `Pipewire` sources, but you will need to enable `Allow any zoom source` and `Set manual source position` since the script cannot get the size by itself.
+注意：如果你在非显示器采集源上也使用了`变换裁剪`，你需要手动将其转换为`裁剪/填充滤镜`（脚本很难为非显示器源自动转换）。
 
-* Using Mac:
-   * When using `Set manual source position` you may need to set the `Monitor Height` value as it is used to invert the Y coordinate of the mouse position so that it matches the values of Windows and Linux that the script expects.
+## 已知限制
+* 仅自动支持`显示器采集`源
+   * 理论上，如果能获取相对于特定窗口的鼠标位置，也可以用于窗口采集
+   * 现在可以启用[`显示所有源`](#关于显示所有源)选项来选择非显示器采集源，但**必须**手动设置源位置值
 
-## Development Setup
-* Clone this repo
-* Edit `obs-zoom-to-mouse.lua`
-* Click `Reload Scripts` in the OBS Scripts window
+* 在 Linux 上：
+   * 可能需要安装 [loopback 包](https://obsproject.com/forum/threads/obs-no-display-screen-capture-option.156314/) 以启用 `XSHM` 显示器采集源。此源的行为最接近 Windows 和 Mac 上的采集方式，因此脚本可以自动计算尺寸。
+   * 脚本也支持 `Pipewire` 源，但需要启用`允许任何缩放源`和`手动设置源位置`，因为脚本无法自动获取尺寸。
+
+* 在 Mac 上：
+   * 使用`手动设置源位置`时，可能需要设置`显示器高度`值，该值用于反转鼠标位置的 Y 坐标，以匹配脚本预期的 Windows 和 Linux 的值。
+
+## 开发设置
+* 克隆此仓库
+* 编辑 `obs-zoom-to-mouse.lua`
+* 点击 OBS 脚本窗口中的`重新加载脚本`
 
 ##
 
-Want to support me staying awake long enough to add some more features?
+想支持我熬夜添加更多功能吗？
 
 <a href="https://www.buymeacoffee.com/blanksourcecode" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
-
