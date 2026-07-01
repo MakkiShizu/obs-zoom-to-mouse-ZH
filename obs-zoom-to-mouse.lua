@@ -387,7 +387,7 @@ function get_monitor_info(source)
 
     if not info then
         log("警告：无法自动计算缩放源位置和尺寸。\n" ..
-            "         请尝试使用"手动设置源位置"选项并添加覆盖值")
+            "         请尝试使用「手动设置源位置」选项并添加覆盖值")
     end
 
     return info
@@ -568,7 +568,7 @@ function refresh_sceneitem(find_newest)
     if is_non_display_capture then
         if not use_monitor_override then
             log("错误：选中的缩放源不是显示器采集源。\n" ..
-                "       你必须启用"手动设置源位置"并为尺寸和位置设置正确的覆盖值。")
+                "       你必须启用「手动设置源位置」并为尺寸和位置设置正确的覆盖值。")
         end
     end
 
@@ -618,7 +618,7 @@ function refresh_sceneitem(find_newest)
                 source_height = monitor_info.height
             else
                 log("错误：无法确定源尺寸。\n" ..
-                "       请尝试使用"手动设置源位置"选项并添加覆盖值")
+                "       请尝试使用「手动设置源位置」选项并添加覆盖值")
             end
         else
             log("使用源尺寸：" .. source_width .. ", " .. source_height)
@@ -1290,9 +1290,9 @@ function script_properties()
         obs.obs_property_set_long_description(r_label,
             "开启后，UDP 套接字服务器将监听来自远程客户端的鼠标位置消息")
         obs.obs_property_set_long_description(r_port,
-            "更改端口后必须重启服务器（取消再重新勾选"启用远程鼠标监听"）")
+            "更改端口后必须重启服务器（取消再重新勾选「启用远程鼠标监听」）")
         obs.obs_property_set_long_description(r_poll,
-            "更改轮询延迟后必须重启服务器（取消再重新勾选"启用远程鼠标监听"）")
+            "更改轮询延迟后必须重启服务器（取消再重新勾选「启用远程鼠标监听」）")
 
         obs.obs_property_set_visible(r_label, not use_socket)
         obs.obs_property_set_visible(r_port, use_socket)
