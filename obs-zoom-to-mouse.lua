@@ -449,7 +449,7 @@ function release_sceneitem()
 
         if sceneitem_info_orig ~= nil then
             log("变换信息已重置为原始值")
-            obs.obs_sceneitem_get_info(sceneitem, sceneitem_info_orig)
+            obs.obs_sceneitem_get_info2(sceneitem, sceneitem_info_orig)
             sceneitem_info_orig = nil
         end
 
@@ -575,13 +575,13 @@ function refresh_sceneitem(find_newest)
     if sceneitem ~= nil then
         -- 保存原始设置以便之后恢复
         sceneitem_info_orig = obs.obs_transform_info()
-        obs.obs_sceneitem_get_info(sceneitem, sceneitem_info_orig)
+        obs.obs_sceneitem_get_info2(sceneitem, sceneitem_info_orig)
 
         sceneitem_crop_orig = obs.obs_sceneitem_crop()
         obs.obs_sceneitem_get_crop(sceneitem, sceneitem_crop_orig)
 
         sceneitem_info = obs.obs_transform_info()
-        obs.obs_sceneitem_get_info(sceneitem, sceneitem_info)
+        obs.obs_sceneitem_get_info2(sceneitem, sceneitem_info)
 
         sceneitem_crop = obs.obs_sceneitem_crop()
         obs.obs_sceneitem_get_crop(sceneitem, sceneitem_crop)
